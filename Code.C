@@ -53,6 +53,9 @@ public class Script
 		this.edvUD103A = ((EpiDataView)(this.oTrans.EpiDataViews["UD103A"]));
 		this.edvUD103A.EpiViewNotification += new EpiViewNotification(this.edvUD103A_EpiViewNotification);
 		this.UD103A_Column.ColumnChanged += new DataColumnChangeEventHandler(this.UD103A_AfterFieldChange);
+		this.UD103_Column.ColumnChanged += new DataColumnChangeEventHandler(this.UD103_AfterFieldChange);
+		this.UD103_Row.EpiRowChanged += new EpiRowChanged(this.UD103_AfterRowChange);
+		this.UD103_Column.ColumnChanging += new DataColumnChangeEventHandler(this.UD103_BeforeFieldChange);
 		// End Wizard Added Variable Initialization
 
 		// Begin Wizard Added Custom Method Calls
@@ -152,6 +155,9 @@ public class Script
 		this.epiBTT_Follow_Add.Click -= new System.EventHandler(this.epiBTT_Follow_Add_Click);
 		this.epiBTT_Pre_Add.Click -= new System.EventHandler(this.epiBTT_Pre_Add_Click);
 		this.epiBT_FOLLOW.Click -= new System.EventHandler(this.epiBT_FOLLOW_Click);
+		this.UD103_Column.ColumnChanged -= new DataColumnChangeEventHandler(this.UD103_AfterFieldChange);
+		this.UD103_Row.EpiRowChanged -= new EpiRowChanged(this.UD103_AfterRowChange);
+		this.UD103_Column.ColumnChanging -= new DataColumnChangeEventHandler(this.UD103_BeforeFieldChange);
 		// End Wizard Added Object Disposal
 
 		// Begin Custom Code Disposal
@@ -309,6 +315,7 @@ public class Script
 
 	private void edvUD103_EpiViewNotification(EpiDataView view, EpiNotifyArgs args)
 	{
+
 		// ** Argument Properties and Uses **
 		// view.dataView[args.Row]["FieldName"]
 		// args.Row, args.Column, args.Sender, args.NotifyType
@@ -327,6 +334,9 @@ public class Script
 				epiUltraGridC1_TFOs.DisplayLayout.AutoFitStyle = Infragistics.Win.UltraWinGrid.AutoFitStyle.ResizeAllColumns;
 				epiUltraGridC1_POs.DisplayLayout.AutoFitStyle = Infragistics.Win.UltraWinGrid.AutoFitStyle.ResizeAllColumns;
 				epiUltraGridC1_Parts.DisplayLayout.AutoFitStyle = Infragistics.Win.UltraWinGrid.AutoFitStyle.ResizeAllColumns;
+
+				FormLock((string)edvUD103.dataView[edvUD103.Row]["ShortChar06"]);
+				MRG_FormLock((string)edvUD103.dataView[edvUD103.Row]["ShortChar06"],s.UserID,(string)edvUD103.dataView[edvUD103.Row]["ShortChar03"]);
 				
 			}
 			else
@@ -339,6 +349,145 @@ public class Script
 				while(TFOsGrid.Rows.Count > 0)TFOsGrid.Rows[0].Delete();
 			}
 		}
+	}
+
+	private void FormLock(string status)
+	{
+
+		//*******************
+		// Based on the status of the CAR, the Group Controlls are dissabled or enabled.  
+		// This is done reguardless of the MGR and applied to all users.
+		// The Next procedure will open based on the MRG.
+		//*******************
+
+        switch (status) {
+            case "OPEN": 
+			{
+  		      csm.GetNativeControlReference("810241f6-e91e-4112-be62-f77982737f3c").Enabled = false;
+  		      csm.GetNativeControlReference("d0549ae5-74eb-4aed-b566-3b077c23f174").Enabled = true;
+  		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = false;
+            }
+			break;
+
+            case "IN PROGRESS": 
+			{
+  		      csm.GetNativeControlReference("810241f6-e91e-4112-be62-f77982737f3c").Enabled = false;
+  		      csm.GetNativeControlReference("d0549ae5-74eb-4aed-b566-3b077c23f174").Enabled = true;
+  		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = false;
+            }
+			break;
+
+            case "FOLLOW UP": 
+			{
+  		      csm.GetNativeControlReference("810241f6-e91e-4112-be62-f77982737f3c").Enabled = false;
+  		      csm.GetNativeControlReference("d0549ae5-74eb-4aed-b566-3b077c23f174").Enabled = false;
+  		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = true;
+            }
+			break;
+
+            case "CLOSE": 
+			{
+				//ALL LOCKED
+  		      csm.GetNativeControlReference("810241f6-e91e-4112-be62-f77982737f3c").Enabled = false;
+  		      csm.GetNativeControlReference("d0549ae5-74eb-4aed-b566-3b077c23f174").Enabled = false;
+  		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = false;
+            }
+			break;
+
+            case "REJECTED": 
+			{
+				//ALL LOCKED
+  		      csm.GetNativeControlReference("810241f6-e91e-4112-be62-f77982737f3c").Enabled = false;
+  		      csm.GetNativeControlReference("d0549ae5-74eb-4aed-b566-3b077c23f174").Enabled = false;
+  		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = false;
+            }
+			break;
+
+            case "": 
+			{
+				//ALL UN-LOCKED
+  		      csm.GetNativeControlReference("810241f6-e91e-4112-be62-f77982737f3c").Enabled = true;
+  		      csm.GetNativeControlReference("d0549ae5-74eb-4aed-b566-3b077c23f174").Enabled = true;
+  		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = true;
+            }
+			break;
+		}
+	}
+
+private void MRG_FormLock(string status,string userID,string CarMgr)
+	{
+		//*******************
+		// Based on the status of the CAR, AND THE CAR MGR the GrouP Controlls are dissabled or enabled.  
+		// In this procedure the CAR MRG will be compaired to the CUR-USER and the controlls will be opend or closed
+		//*******************
+		string MgrTest = string.Empty;
+		//MessageBox.Show(userID + " -|- " + CarMgr);
+		if (userID == CarMgr)
+		{
+			MgrTest = "TRUE";
+			// MessageBox.Show(userID + " " + CarMgr);
+		}
+
+        switch (status) {
+
+            case "CLOSE": 
+			{
+				//ALL LOCKED no Change
+        		MessageBox.Show("T- CLOSE");
+  		      csm.GetNativeControlReference("810241f6-e91e-4112-be62-f77982737f3c").Enabled = false;
+  		      csm.GetNativeControlReference("d0549ae5-74eb-4aed-b566-3b077c23f174").Enabled = false;
+  		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = false;
+            }
+			break;
+
+            case "REJECTED": 
+			{
+				//ALL LOCKED no Change
+        		MessageBox.Show("T- REJECTED");
+  		      csm.GetNativeControlReference("810241f6-e91e-4112-be62-f77982737f3c").Enabled = false;
+  		      csm.GetNativeControlReference("d0549ae5-74eb-4aed-b566-3b077c23f174").Enabled = false;
+  		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = false;
+            }
+			break;
+
+            case "OPEN": 
+			{
+        		MessageBox.Show("T-Open");
+  		      csm.GetNativeControlReference("810241f6-e91e-4112-be62-f77982737f3c").Enabled = false;
+  		      csm.GetNativeControlReference("d0549ae5-74eb-4aed-b566-3b077c23f174").Enabled = true;
+  		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = false;
+            }
+			break;
+
+            case "IN PROGRESS": 
+			{
+        		MessageBox.Show("T-IP");
+  		      csm.GetNativeControlReference("810241f6-e91e-4112-be62-f77982737f3c").Enabled = false;
+  		      csm.GetNativeControlReference("d0549ae5-74eb-4aed-b566-3b077c23f174").Enabled = true;
+  		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = false;
+            }
+			break;
+
+            case "FOLLOW UP": 
+			{
+        		MessageBox.Show("T-FOLLOW UP");
+  		      csm.GetNativeControlReference("810241f6-e91e-4112-be62-f77982737f3c").Enabled = false;
+  		      csm.GetNativeControlReference("d0549ae5-74eb-4aed-b566-3b077c23f174").Enabled = false;
+  		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = true;
+            }
+			break;
+
+            case "": 
+			{
+				//ALL UN-LOCKED
+        		MessageBox.Show("T-NONE");
+  		      csm.GetNativeControlReference("810241f6-e91e-4112-be62-f77982737f3c").Enabled = true;
+  		      csm.GetNativeControlReference("d0549ae5-74eb-4aed-b566-3b077c23f174").Enabled = true;
+  		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = true;
+            }
+			break;
+		}
+
 	}
 
     private void SendEmail(List<string> addresses, string subject, string body) {
@@ -449,6 +598,7 @@ public class Script
 
 	private void UD103A_AfterFieldChange(object sender, DataColumnChangeEventArgs args)
 	{
+
 		// ** Argument Properties and Uses **
 		// args.Row["FieldName"]
 		// args.Column, args.ProposedValue, args.Row
@@ -867,6 +1017,44 @@ public class Script
 
 
 			edvUD103.dataView[edvUD103.Row].EndEdit();
+		}
+	}
+
+	private void UD103_AfterFieldChange(object sender, DataColumnChangeEventArgs args)
+	{
+		oTrans.PushStatusText("AFTER FIELD CHANGE", false);
+		// ** Argument Properties and Uses **
+		// args.Row["FieldName"]
+		// args.Column, args.ProposedValue, args.Row
+		// Add Event Handler Code
+		switch (args.Column.ColumnName)
+		{
+			case "Key1":
+			break;
+		}
+	}
+
+	private void UD103_AfterRowChange(EpiRowChangedArgs args)
+	{
+		// ** Argument Properties and Uses **
+		// args.CurrentView.dataView[args.CurrentRow]["FieldName"]
+		// args.LastRow, args.CurrentRow, args.CurrentView
+		// Add Event Handler Code
+
+
+	}
+
+	private void UD103_BeforeFieldChange(object sender, DataColumnChangeEventArgs args)
+	{
+
+		// ** Argument Properties and Uses **
+		// args.Row["FieldName"]
+		// args.Column, args.ProposedValue, args.Row
+		// Add Event Handler Code
+		switch (args.Column.ColumnName)
+		{
+			case "Key1":
+				break;
 		}
 	}
 }

@@ -57,11 +57,15 @@ public class Script
 
 		// Begin Wizard Added Custom Method Calls
 
-		this.epiButtonC1_CarfFormFollowUpBy.Click += new System.EventHandler(this.epiButtonC1_CarfFormFollowUpBy_Click);
 		this.epiButtonC1_CarFormSubmitOpen.Click += new System.EventHandler(this.epiButtonC1_CarFormSubmitOpen_Click);
 		this.epiButtonC1_CarFormSendForReview.Click += new System.EventHandler(this.epiButtonC1_CarFormSendForReview_Click);
 		this.epiButtonC1_PartsListAddNewPart.Click += new System.EventHandler(this.epiButtonC1_PartsListAddNewPart_Click);
 		this.epiButtonC1_PopulateGrid.Click += new System.EventHandler(this.epiButtonC1_PopulateGrid_Click);
+		this.epiBTT_Root_Add.Click += new System.EventHandler(this.epiBTT_Root_Add_Click);
+		this.epiBTT_CA_Comm_Add.Click += new System.EventHandler(this.epiBTT_CA_Comm_Add_Click);
+		this.epiBTT_Follow_Add.Click += new System.EventHandler(this.epiBTT_Follow_Add_Click);
+		this.epiBTT_Pre_Add.Click += new System.EventHandler(this.epiBTT_Pre_Add_Click);
+		this.epiBT_FOLLOW.Click += new System.EventHandler(this.epiBT_FOLLOW_Click);
 		// End Wizard Added Custom Method Calls
 		s = (Epicor.Mfg.Core.Session)UD103Form.Session;
 
@@ -134,7 +138,6 @@ public class Script
 		// ** Wizard Insert Location - Do not delete 'Begin/End Wizard Added Object Disposal' lines **
 		// Begin Wizard Added Object Disposal
 
-		this.epiButtonC1_CarfFormFollowUpBy.Click -= new System.EventHandler(this.epiButtonC1_CarfFormFollowUpBy_Click);
 		this.epiButtonC1_CarFormSubmitOpen.Click -= new System.EventHandler(this.epiButtonC1_CarFormSubmitOpen_Click);
 		this.epiButtonC1_CarFormSendForReview.Click -= new System.EventHandler(this.epiButtonC1_CarFormSendForReview_Click);
 		this.edvUD103.EpiViewNotification -= new EpiViewNotification(this.edvUD103_EpiViewNotification);
@@ -144,6 +147,11 @@ public class Script
 		this.edvUD103A = null;
 		this.UD103A_Column.ColumnChanged -= new DataColumnChangeEventHandler(this.UD103A_AfterFieldChange);
 		this.epiButtonC1_PopulateGrid.Click -= new System.EventHandler(this.epiButtonC1_PopulateGrid_Click);
+		this.epiBTT_Root_Add.Click -= new System.EventHandler(this.epiBTT_Root_Add_Click);
+		this.epiBTT_CA_Comm_Add.Click -= new System.EventHandler(this.epiBTT_CA_Comm_Add_Click);
+		this.epiBTT_Follow_Add.Click -= new System.EventHandler(this.epiBTT_Follow_Add_Click);
+		this.epiBTT_Pre_Add.Click -= new System.EventHandler(this.epiBTT_Pre_Add_Click);
+		this.epiBT_FOLLOW.Click -= new System.EventHandler(this.epiBT_FOLLOW_Click);
 		// End Wizard Added Object Disposal
 
 		// Begin Custom Code Disposal
@@ -161,17 +169,7 @@ public class Script
 		TFOsGrid = null;
 	}
 
-	private void epiButtonC1_CarfFormFollowUpBy_Click(object sender, System.EventArgs args)
-	{
-		edvUD103.dataView[edvUD103.Row].BeginEdit();
-		//1. UD103.ShortChar06 = "CLOSE"
-		edvUD103.dataView[edvUD103.Row]["ShortChar06"] = "CLOSE";
-		//2. UD103.Date05  = NOW
-		edvUD103.dataView[edvUD103.Row]["Date05"] = DateTime.Now;
-		//3. UD103.ShortChar09 = Stamp time 2:00PM 1-APR-16 Cur-User
-		edvUD103.dataView[edvUD103.Row]["ShortChar09"] = string.Format("{0:HH:mmtt dd-mmm-yy}{1}", DateTime.Now, s.UserID);
-		edvUD103.dataView[edvUD103.Row].EndEdit();
-	}
+
 
 	private void epiButtonC1_CarFormSubmitOpen_Click(object sender, System.EventArgs args)
 	{
@@ -181,36 +179,62 @@ public class Script
 		//Set Car Manager based on below.
 		//	1. If Cur-Company & Cur-Plant = CIC68322MfgSys then UD103.ShortChar03 = Anicol
 		if(s.CompanyID == "CIC68322" && s.PlantID=="MfgSys")
+			{
 			//edvUD103.dataView[edvUD103.Row]["ShortChar03"] = "Anicol";
 			AssignedManager = "anicol";
+			edvUD103.dataView[edvUD103.Row]["Character10"] = "CT";
+			}
 		//	2. If Cur-Company & Cur-Plant = CIC6832210 then UD103.ShortChar03 = emcane
 		else if(s.CompanyID == "CIC68322" && s.PlantID=="03")
+			{
 			AssignedManager = "emcane";
+			edvUD103.dataView[edvUD103.Row]["Character10"] = "IR";
+			}
 		//	3. If Cur-Company & Cur-Plant = CIC6832204 then UD103.ShortChar03 = anicol
 		else if(s.CompanyID == "CIC68322" && s.PlantID=="04")
+			{
 			AssignedManager = "anicol";
+			edvUD103.dataView[edvUD103.Row]["Character10"] = "WS";
+			}
 		//	4. If Cur-Company & Cur-Plant = CIC6832205 then UD103.ShortChar03 = Jonp
 		else if(s.CompanyID == "CIC68322" && s.PlantID=="05")
+			{
 			AssignedManager = "Jonp";
+			edvUD103.dataView[edvUD103.Row]["Character10"] = "TX";
+			}
 		//	5. If Cur-Company & Cur-Plant = CIC6832206 then UD103.ShortChar03 = ibutcher
 		else if(s.CompanyID == "CIC68322" && s.PlantID=="06")
+			{
 			AssignedManager = "ibutcher";
+			edvUD103.dataView[edvUD103.Row]["Character10"] = "MX";
+			}
 		//	6. If Cur-Company & cur-Plant = 10MfgSys then UD103.ShortChar03 = plowe
 		else if(s.CompanyID == "10" && s.PlantID=="MfgSys")
+			{
 			AssignedManager = "plowe";
+			edvUD103.dataView[edvUD103.Row]["Character10"] = "UK";
+			}
 		//	7. If Cur-Company & cur-Plant = 20MfgSys then UD103.ShortChar03 = mroat
 		else if(s.CompanyID == "MfgSys" && s.PlantID=="MfgSys")
+			{
 			AssignedManager = "mroat";
+			edvUD103.dataView[edvUD103.Row]["Character10"] = "PL";
+			}
 		//	8. ** Double Check so you can't assign a CAR to yourself, and be a manager
 		//	9. if UD103.Company = CIC68322 and UD103.ShortChar03 = UD103.shortchar01 Then UD103.shortchar03 = gwarner
-		else if(s.CompanyID=="CIC68322" && (string)edvUD103.dataView[edvUD103.Row]["ShortChar03"] == (string)edvUD103.dataView[edvUD103.Row]["ShortChar01"])
+		if(s.CompanyID=="CIC68322" && AssignedManager == (string)edvUD103.dataView[edvUD103.Row]["ShortChar01"])
+			{
 			AssignedManager = "gwarner";
+			}
 		//	10. if UD103.Company = 10  and UD103.ShortChar03 = UD103.shortchar01 then = UD103.shortchar03 = gwarner
-		else if(s.CompanyID=="10" && (string)edvUD103.dataView[edvUD103.Row]["ShortChar03"] == (string)edvUD103.dataView[edvUD103.Row]["ShortChar01"])
+		 if(s.CompanyID=="10" && AssignedManager == (string)edvUD103.dataView[edvUD103.Row]["ShortChar01"])
+			{
 			AssignedManager = "gwarner";
+			}
 		//	11. if UD103.Company = 20 and  UD103.ShortChar03 = UD103.shortchar01 Then UD103.shortchar03 = Plowe
-		else if(s.CompanyID=="20" && (string)edvUD103.dataView[edvUD103.Row]["ShortChar03"] == (string)edvUD103.dataView[edvUD103.Row]["ShortChar01"])
-			AssignedManager = "Plowe";
+		 if(s.CompanyID=="20" && AssignedManager == (string)edvUD103.dataView[edvUD103.Row]["ShortChar01"])
+			AssignedManager = "plowe";
+
 		if(AssignedManager == string.Empty)
 		{
 			MessageBox.Show("Unable to assign a manager to this, Unable to submit");
@@ -218,7 +242,7 @@ public class Script
 		}
 		edvUD103.dataView[edvUD103.Row].BeginEdit();
 		//Stamp time 2:00PM 1-APR-16 Cur-User in UD103.ShortChar04
-		edvUD103.dataView[edvUD103.Row]["ShortChar04"] = string.Format("{1} {0:HH:mmtt dd-mmm-yy}", DateTime.Now, s.UserID);
+		edvUD103.dataView[edvUD103.Row]["ShortChar04"] = string.Format("{1} {0:HH:mmtt dd-MMM-yy}", DateTime.Now, s.UserID);
 		//UD103.ShortChar06 = "OPEN"
 		edvUD103.dataView[edvUD103.Row]["ShortChar06"] = "OPEN";
 		//UD103.Date01 = NOW()
@@ -229,6 +253,10 @@ public class Script
 		edvUD103.dataView[edvUD103.Row]["ShortChar03"] = AssignedManager;
          //Send Email TO: user > UD103.ShortChar01
          //Send Email CC: user > UD103.ShortChar03
+		 
+		 // Set Plant based on CUR-PLANT
+		
+		 //edvUD103.dataView[edvUD103.Row]["Character10"] = s.PlantID;
 
 		List<string> address = new List<string>();
 		DataTable AddressTable = GetUserFileRows();
@@ -239,7 +267,10 @@ public class Script
 				address.Add((string)r["UserFile.EmailAddress"]);
 			}
 		}
-		SendEmail(address, "Subject", "Body");
+		string strSubject = string.Format("CAR# {0}, Needs your attention!", edvUD103.dataView[edvUD103.Row]["KEY1"]);
+		string strBody = string.Format("A CAR has been generated and issued to {0}. You have until {1:dd-MMM-yyyy} to submit this CAR back to {2} for review.", edvUD103.dataView[edvUD103.Row]["ShortChar02"], edvUD103.dataView[edvUD103.Row]["Date02"], edvUD103.dataView[edvUD103.Row]["ShortChar03"]);
+
+		SendEmail(address, strSubject,strBody);
 		address = null;
 		edvUD103.dataView[edvUD103.Row].EndEdit();
 	}
@@ -259,7 +290,11 @@ public class Script
 				address.Add((string)r["UserFile.EmailAddress"]);
 			}
 		}
-		SendEmail(address, "Subject", "Body");
+
+		string strSubject = string.Format("CAR# {0}, Has Been Submited for Approval!", edvUD103.dataView[edvUD103.Row]["KEY1"]);
+		string strBody = string.Format("CAR {0} has been submitted back to {1} for review and approval.  Based on the implementation date on the CAR, you have until {2:dd-MMM-yyyy} to complete your follow up and close the CAR.", edvUD103.dataView[edvUD103.Row]["Key1"], edvUD103.dataView[edvUD103.Row]["ShortChar03"],edvUD103.dataView[edvUD103.Row]["Date04"]);
+	
+		SendEmail(address, strSubject,strBody);
 		address = null;
 		//3. UD103.Date04  = UD103.Date03 + 30 Days (if Date03 is empty, set date 03 to NOW)
 		try{
@@ -292,7 +327,7 @@ public class Script
 				epiUltraGridC1_TFOs.DisplayLayout.AutoFitStyle = Infragistics.Win.UltraWinGrid.AutoFitStyle.ResizeAllColumns;
 				epiUltraGridC1_POs.DisplayLayout.AutoFitStyle = Infragistics.Win.UltraWinGrid.AutoFitStyle.ResizeAllColumns;
 				epiUltraGridC1_Parts.DisplayLayout.AutoFitStyle = Infragistics.Win.UltraWinGrid.AutoFitStyle.ResizeAllColumns;
-
+				
 			}
 			else
 			{
@@ -375,9 +410,9 @@ public class Script
 		}
 		dsPartAdapter = null;
 	}
-	private void SearchOnPartAdapterNoDialog(string partnum)
+	private bool SearchOnPartAdapterNoDialog(string partnum)
 	{
-		if(AddingPartInCode) return;
+		if(AddingPartInCode) return false;
 		bool recSelected;
 		string whereClause = string.Format("(PartNum='{0}')", partnum);
 		System.Data.DataSet dsPartAdapter = Epicor.Mfg.UI.FormFunctions.SearchFunctions.listLookup(this.oTrans, "PartAdapter", out recSelected, false, whereClause);
@@ -388,13 +423,14 @@ public class Script
 			DisplayData("NoDialog PartNum");
 			AddPartNum = (string)adapterRow["PartNum"];
 			DisplayData("NoDialog PartDescription");
-			AddPartNum = (string)adapterRow["PartDescription "];
+			AddPartDescription = (string)adapterRow["PartDescription"];
 			DisplayData("NoDialog ProdCode");
-			AddProdGroup = (string)adapterRow["ProdCode "];
+			AddProdGroup = (string)adapterRow["ProdCode"];
 			DisplayData("NoDialog ClassID");
-			AddPartClass = (string)adapterRow["ClassID "];
+			AddPartClass = (string)adapterRow["ClassID"];
 		}
 		dsPartAdapter = null;
+		return recSelected;
 	}
 
 	private void edvUD103A_EpiViewNotification(EpiDataView view, EpiNotifyArgs args)
@@ -422,11 +458,11 @@ public class Script
 			case "ChildKey1":
 				if(AddingPartInCode)return;
 				AddPartNum = AddPartDescription = AddPartClass = AddProdGroup = string.Empty;
-				SearchOnPartAdapterNoDialog((string)edvUD103A.dataView[edvUD103A.Row]["ChildKey1"]);
-				if(AddPartNum != string.Empty)
+				
+				if(SearchOnPartAdapterNoDialog((string)edvUD103A.dataView[edvUD103A.Row]["ChildKey1"]))
 				{
 					edvUD103A.dataView[edvUD103A.Row].BeginEdit();
-					edvUD103A.dataView[edvUD103A.Row]["ChildKey1"] = AddPartNum;
+//					edvUD103A.dataView[edvUD103A.Row]["ChildKey1"] = AddPartNum;
 					edvUD103A.dataView[edvUD103A.Row]["Character01"] = AddPartDescription;
 					edvUD103A.dataView[edvUD103A.Row]["ShortChar01"] = AddPartClass;
 					edvUD103A.dataView[edvUD103A.Row]["ShortChar02"] = AddProdGroup;
@@ -439,13 +475,58 @@ public class Script
 				break;
 		}
 	}
-
 	private void UD103Form_Load(object sender, EventArgs args)
 	{
-		EpiTreeViewPanel panel = (EpiTreeViewPanel)csm.GetNativeControlReference("46c8ee42-a6f1-468b-95ba-6dfc13223ee2").Parent;
-		Infragistics.Win.UltraWinDock.DockableWindow dock = (Infragistics.Win.UltraWinDock.DockableWindow)panel.Parent;
-		Infragistics.Win.UltraWinDock.DockableControlPane pane = dock.Pane;
-		pane.Close();
+//		EpiTreeViewPanel panel = (EpiTreeViewPanel)csm.GetNativeControlReference("46c8ee42-a6f1-468b-95ba-6dfc13223ee2").Parent;
+//		Infragistics.Win.UltraWinDock.DockableWindow dock = (Infragistics.Win.UltraWinDock.DockableWindow)panel.Parent;
+//		Infragistics.Win.UltraWinDock.DockableControlPane pane = dock.Pane;
+//		pane.Close();
+
+		        edvUD103.dataView.Table.Columns["Character02"].ExtendedProperties["ReadOnly"] = true;
+		        edvUD103.dataView.Table.Columns["Character03"].ExtendedProperties["ReadOnly"] = true;
+		        edvUD103.dataView.Table.Columns["Character04"].ExtendedProperties["ReadOnly"] = true;
+		        edvUD103.dataView.Table.Columns["Character05"].ExtendedProperties["ReadOnly"] = true;
+		        edvUD103.dataView.Table.Columns["ShortChar03"].ExtendedProperties["ReadOnly"] = true;
+		        edvUD103.dataView.Table.Columns["ShortChar01"].ExtendedProperties["ReadOnly"] = true;
+
+
+				//Cool trick to create LABELS
+				//Root Cause epiLabelC16
+				string AS1 = "One method to perform a Root Cause Analysis is to ask the question “Why?” five times, starting with “Why did the discrepancy happen”";
+				string AS2 = " o   Ex. Why was the cover not sewn per the pattern?";
+				string AS3 = "Another method to perform a Root Cause Analysis is to fill out a Fish Bone Diagram";
+				string AS4 = " o   See QA-F-017 in the AS9100 vault in Meridian";
+				epiLabelC15.Text = string.Format("{1}{0}{2}{0}{3}{0}{4}",Environment.NewLine,AS1,AS2,AS3,AS4);
+				epiLabelC15.TextAlign = System.Drawing.ContentAlignment.TopLeft;
+
+				//Corrective Action epiLabelC16
+				string BS1 = "Any actions done to contain the problem should be listed in this section. Example of Containment actions";
+				string BS2 = " o   All stock and in-transit product will be verified";
+				string BS3 = " o   The part will be put on hold in Epicor to hold shipments";
+				string BS4 = " o   All inventory will been quarantined and will be reviewed by Quality";
+				string BS5 = "Once the Containment Actions are complete, the comments section should be updated with the findings/results.  The Corrective Action should immediately fix the problem in order to prevent any more escapes.  Example of Corrective Action.";
+				string BS6 = " o   A Quality Alert will be posted to ensure all are aware of the discrepancy";
+				string BS7 = " o   Parts will be reworked to meet the drawing";
+				epiLabelC16.Text = string.Format("{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}",Environment.NewLine,BS1,BS2,BS3,BS4,BS5,BS6,BS7);
+				epiLabelC16.TextAlign = System.Drawing.ContentAlignment.TopLeft;
+
+				//Corrective Action epiLabelC17
+				string CS1 = "The Preventive Action should directly answer the question “What needs to be done to ensure the discrepancy does not happen again?”  Example of Preventive Action.";
+				string CS2 = " o   An ECR will be generated for this part, and all similar parts, to update the manufacturing documents";
+				string CS3 = " o   The procedure will be updated and all relating departments will be trained on the new procedure";
+				epiLabelC17.Text = string.Format("{1}{0}{2}{0}{3}",Environment.NewLine,CS1,CS2,CS3);
+				epiLabelC17.TextAlign = System.Drawing.ContentAlignment.TopLeft;
+
+				//Corrective Action epiLabelC18
+				string DS1 = "The Follow Up must review the Preventive and Corrective Actions to ensure they were effective";
+				string DS2 = " o   Ex. No more rejections have occurred since the implementation of the Preventive Action";
+				string DS3 = "All evidence of the implementation of the Corrective and Preventive Actions must be verified and attached to the CAR";
+				string DS4 = " o   Ex. Training documentation of a new/updated procedure needs to be attached";
+				epiLabelC18.Text = string.Format("{1}{0}{2}{0}{3}",Environment.NewLine,DS1,DS2,DS3,DS4);
+				epiLabelC18.TextAlign = System.Drawing.ContentAlignment.TopLeft;
+
+
+
 	}
 
 	private void PopulateGrids(bool OrderRmaTOPO_ONLY)
@@ -681,5 +762,111 @@ public class Script
 	private void epiButtonC1_PopulateGrid_Click(object sender, System.EventArgs args)
 	{
 		PopulateGrids(false);
+	}
+
+	private void epiBTT_Root_Add_Click(object sender, System.EventArgs args)
+	{
+		string User_TnD = string.Format("{0:HH:mmtt dd-MMM-yyyy} {1}", DateTime.Now, s.UserID);
+		string addfieldContents = string.Empty;
+
+		addfieldContents = string.Format("{3}{0}{3}{1}{3}{2}{3}",
+			"---------------------",
+			User_TnD,
+			txt_Root_Add.Text,
+			Environment.NewLine);
+
+			edvUD103.dataView[edvUD103.Row]["Character02"] += addfieldContents;
+			edvUD103.dataView[edvUD103.Row]["ShortChar06"] = "In Progress";
+
+	}
+
+	private void epiBTT_CA_Comm_Add_Click(object sender, System.EventArgs args)
+	{
+		string User_TnD = string.Format("{0:HH:mmtt dd-MMM-yyyy} {1}", DateTime.Now, s.UserID);
+		string addfieldContents = string.Empty;
+
+		addfieldContents = string.Format("{3}{0}{3}{1}{3}{2}{3}",
+			"---------------------",
+			User_TnD,
+			txt_CA_Comm_Add.Text,
+			Environment.NewLine);
+
+			edvUD103.dataView[edvUD103.Row]["Character03"] += addfieldContents;
+			edvUD103.dataView[edvUD103.Row]["ShortChar06"] = "In Progress";
+	}
+
+	private void epiBTT_Pre_Add_Click(object sender, System.EventArgs args)
+	{
+		string User_TnD = string.Format("{0:HH:mmtt dd-MMM-yyyy} {1}", DateTime.Now, s.UserID);
+		string addfieldContents = string.Empty;
+
+		addfieldContents = string.Format("{3}{0}{3}{1}{3}{2}{3}",
+			"---------------------",
+			User_TnD,
+			txt_Pre_Add.Text,
+			Environment.NewLine);
+
+			edvUD103.dataView[edvUD103.Row]["Character05"] += addfieldContents;
+			edvUD103.dataView[edvUD103.Row]["ShortChar06"] = "In Progress";
+
+	}
+
+	private void epiBTT_Follow_Add_Click(object sender, System.EventArgs args)
+	{
+		string User_TnD = string.Format("{0:HH:mmtt dd-MMM-yyyy} {1}", DateTime.Now, s.UserID);
+		string addfieldContents = string.Empty;
+
+		addfieldContents = string.Format("{3}{0}{3}{1}{3}{2}{3}",
+			"---------------------",
+			User_TnD,
+			txt_Follow_Add.Text,
+			Environment.NewLine);
+
+			edvUD103.dataView[edvUD103.Row]["Character04"] += addfieldContents;
+			edvUD103.dataView[edvUD103.Row]["ShortChar06"] = "In Progress";
+
+	}
+
+
+
+	private void epiBT_FOLLOW_Click(object sender, System.EventArgs args)
+	{
+
+		if (edvUD103.dataView[edvUD103.Row]["ShortChar10"] == "YES")
+		{
+			edvUD103.dataView[edvUD103.Row].BeginEdit();
+			//1. UD103.ShortChar06 = "CLOSE"
+			edvUD103.dataView[edvUD103.Row]["ShortChar06"] = "CLOSE";
+			//2. UD103.Date05  = NOW
+			edvUD103.dataView[edvUD103.Row]["Date05"] = DateTime.Now;
+			//3. UD103.ShortChar09 = Stamp time 2:00PM 1-APR-16 Cur-User
+			edvUD103.dataView[edvUD103.Row]["ShortChar09"] = string.Format("{0:HH:mmtt dd-MMM-yy} {1}", DateTime.Now, s.UserID);
+			edvUD103.dataView[edvUD103.Row].EndEdit();
+		}
+		else if (edvUD103.dataView[edvUD103.Row]["ShortChar10"] == "NO")
+		{
+			edvUD103.dataView[edvUD103.Row].BeginEdit();
+			//1. UD103.ShortChar06 = "OPEN"
+			edvUD103.dataView[edvUD103.Row]["ShortChar06"] = "OPEN";
+			//2. UD103.Date04  Date add 30 days
+			edvUD103.dataView[edvUD103.Row]["Date04"] = DateTime.Now.AddDays(30);
+			//3. Increase counter +1
+			int cc = 0;
+			cc = Convert.ToInt32(edvUD103.dataView[edvUD103.Row]["Number03"]);
+			edvUD103.dataView[edvUD103.Row]["Number03"] = cc +1;
+			//4. UD103.ShortChar09 = Stamp time 2:00PM 1-APR-16 Cur-User
+			edvUD103.dataView[edvUD103.Row]["ShortChar09"] = "";
+			edvUD103.dataView[edvUD103.Row]["ShortChar10"] = "";
+
+			edvUD103.dataView[edvUD103.Row]["Character04"] += 
+				string.Format("{3}{0}{3}{1}{3}{2}{3}",
+							"---------------------",
+							string.Format("{0:HH:mmtt dd-MMM-yy} {1}", DateTime.Now, s.UserID),
+							"CAR was not sucessfull.  Extending audit date 30 days from today",
+							Environment.NewLine);
+
+
+			edvUD103.dataView[edvUD103.Row].EndEdit();
+		}
 	}
 }

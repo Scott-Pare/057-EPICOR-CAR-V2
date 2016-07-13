@@ -96,7 +96,7 @@ public class Script
 		RMAsGrid = new DataTable();
 		RMAsGrid.Columns.Add("Company", typeof(string));
 		RMAsGrid.Columns.Add("RMANum", typeof(string));
-		RMAsGrid.Columns.Add("RMALine", typeof(string));
+		//RMAsGrid.Columns.Add("RMALine", typeof(string));
 		RMAsGrid.Columns.Add("Order", typeof(string));
 		RMAsGrid.Columns.Add("Line", typeof(string));
 		RMAsGrid.Columns.Add("PartNum", typeof(string));
@@ -134,6 +134,9 @@ public class Script
 		epiUltraGridC1_POs.DisplayLayout.AutoFitStyle = Infragistics.Win.UltraWinGrid.AutoFitStyle.ResizeAllColumns;
 
 		epiUltraGridC1_Parts.DisplayLayout.AutoFitStyle = Infragistics.Win.UltraWinGrid.AutoFitStyle.ResizeAllColumns;
+
+        EpiTextBox key1TextBox = (EpiTextBox)csm.GetNativeControlReference("46567b2e-6bc0-4967-be35-a0ec6843838f");
+        key1TextBox.Leave += key1TextBox_Leave;
 	}
 
 	public void DestroyCustomCode()
@@ -173,9 +176,17 @@ public class Script
 		POsGrid = null;
 		TFOs = null;
 		TFOsGrid = null;
+
+        EpiTextBox key1TextBox = (EpiTextBox)csm.GetNativeControlReference("46567b2e-6bc0-4967-be35-a0ec6843838f");
+        key1TextBox.Leave -= key1TextBox_Leave;
 	}
 
-
+    private void key1TextBox_Leave(object sender, EventArgs e) {
+        EpiTextBox key1TextBox = (EpiTextBox)csm.GetNativeControlReference("46567b2e-6bc0-4967-be35-a0ec6843838f");
+        string key1String = key1TextBox.Text;
+        string _ = string.Empty;
+        oTrans.GetByID(key1String, _, _, _, _);
+    }
 
 	private void epiButtonC1_CarFormSubmitOpen_Click(object sender, System.EventArgs args)
 	{
@@ -202,10 +213,10 @@ public class Script
 			AssignedManager = "anicol";
 			edvUD103.dataView[edvUD103.Row]["Character10"] = "WS";
 			}
-		//	4. If Cur-Company & Cur-Plant = CIC6832205 then UD103.ShortChar03 = Jonp
+		//	4. If Cur-Company & Cur-Plant = CIC6832205 then UD103.ShortChar03 = jonp
 		else if(s.CompanyID == "CIC68322" && s.PlantID=="05")
 			{
-			AssignedManager = "Jonp";
+			AssignedManager = "jonp";
 			edvUD103.dataView[edvUD103.Row]["Character10"] = "TX";
 			}
 		//	5. If Cur-Company & Cur-Plant = CIC6832206 then UD103.ShortChar03 = ibutcher
@@ -381,7 +392,7 @@ public class Script
 			{
   		      csm.GetNativeControlReference("810241f6-e91e-4112-be62-f77982737f3c").Enabled = false;
   		      csm.GetNativeControlReference("d0549ae5-74eb-4aed-b566-3b077c23f174").Enabled = false;
-  		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = true;
+  		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = false;
             }
 			break;
 
@@ -408,7 +419,7 @@ public class Script
 				//ALL UN-LOCKED
   		      csm.GetNativeControlReference("810241f6-e91e-4112-be62-f77982737f3c").Enabled = true;
   		      csm.GetNativeControlReference("d0549ae5-74eb-4aed-b566-3b077c23f174").Enabled = true;
-  		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = true;
+  		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = false;
             }
 			break;
 		}
@@ -428,51 +439,28 @@ private void MRG_FormLock(string status,string userID,string CarMgr)
 			// MessageBox.Show(userID + " " + CarMgr);
 		}
 
-        switch (status) {
+        switch (status + "|" + MgrTest) {
 
-            case "CLOSE": 
+            case "OPEN|TRUE": 
 			{
-				//ALL LOCKED no Change
-        		MessageBox.Show("T- CLOSE");
-  		      csm.GetNativeControlReference("810241f6-e91e-4112-be62-f77982737f3c").Enabled = false;
-  		      csm.GetNativeControlReference("d0549ae5-74eb-4aed-b566-3b077c23f174").Enabled = false;
-  		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = false;
-            }
-			break;
-
-            case "REJECTED": 
-			{
-				//ALL LOCKED no Change
-        		MessageBox.Show("T- REJECTED");
-  		      csm.GetNativeControlReference("810241f6-e91e-4112-be62-f77982737f3c").Enabled = false;
-  		      csm.GetNativeControlReference("d0549ae5-74eb-4aed-b566-3b077c23f174").Enabled = false;
-  		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = false;
-            }
-			break;
-
-            case "OPEN": 
-			{
-        		MessageBox.Show("T-Open");
-  		      csm.GetNativeControlReference("810241f6-e91e-4112-be62-f77982737f3c").Enabled = false;
+  		      csm.GetNativeControlReference("810241f6-e91e-4112-be62-f77982737f3c").Enabled = true;
   		      csm.GetNativeControlReference("d0549ae5-74eb-4aed-b566-3b077c23f174").Enabled = true;
-  		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = false;
+  		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = true;
             }
 			break;
 
-            case "IN PROGRESS": 
+            case "IN PROGRESS|TRUE": 
 			{
-        		MessageBox.Show("T-IP");
-  		      csm.GetNativeControlReference("810241f6-e91e-4112-be62-f77982737f3c").Enabled = false;
+  		      csm.GetNativeControlReference("810241f6-e91e-4112-be62-f77982737f3c").Enabled = true;
   		      csm.GetNativeControlReference("d0549ae5-74eb-4aed-b566-3b077c23f174").Enabled = true;
-  		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = false;
+  		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = true;
             }
 			break;
 
-            case "FOLLOW UP": 
+            case "FOLLOW UP|TRUE": 
 			{
-        		MessageBox.Show("T-FOLLOW UP");
-  		      csm.GetNativeControlReference("810241f6-e91e-4112-be62-f77982737f3c").Enabled = false;
-  		      csm.GetNativeControlReference("d0549ae5-74eb-4aed-b566-3b077c23f174").Enabled = false;
+  		      csm.GetNativeControlReference("810241f6-e91e-4112-be62-f77982737f3c").Enabled = true;
+  		      csm.GetNativeControlReference("d0549ae5-74eb-4aed-b566-3b077c23f174").Enabled = true;
   		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = true;
             }
 			break;
@@ -481,10 +469,7 @@ private void MRG_FormLock(string status,string userID,string CarMgr)
 			{
 				//ALL UN-LOCKED
         		MessageBox.Show("T-NONE");
-  		      csm.GetNativeControlReference("810241f6-e91e-4112-be62-f77982737f3c").Enabled = true;
-  		      csm.GetNativeControlReference("d0549ae5-74eb-4aed-b566-3b077c23f174").Enabled = true;
-  		      csm.GetNativeControlReference("f7d50461-0039-4e3b-be94-43cd499e244a").Enabled = true;
-            }
+  	      }
 			break;
 		}
 
@@ -639,7 +624,6 @@ private void MRG_FormLock(string status,string userID,string CarMgr)
 		        edvUD103.dataView.Table.Columns["ShortChar03"].ExtendedProperties["ReadOnly"] = true;
 		        edvUD103.dataView.Table.Columns["ShortChar01"].ExtendedProperties["ReadOnly"] = true;
 
-
 				//Cool trick to create LABELS
 				//Root Cause epiLabelC16
 				string AS1 = "One method to perform a Root Cause Analysis is to ask the question “Why?” five times, starting with “Why did the discrepancy happen”";
@@ -725,7 +709,7 @@ private void MRG_FormLock(string status,string userID,string CarMgr)
 			foreach(DataRow w in t.Rows)
 			{
 				DataRow newrow = OpenOrdersGrid.NewRow();
-				newrow["Company"] = (string)w["OrderRel.Company"];
+				newrow["Company"] = (string)w["Company"];
 				newrow["Order"] = ((int)w["OrderRel.OrderNum"]).ToString();
 				newrow["Line"] = ((int)w["OrderRel.OrderLine"]).ToString();
 				newrow["Rel"] = ((int)w["OrderRel.OrderRelNum"]).ToString();
@@ -740,7 +724,7 @@ private void MRG_FormLock(string status,string userID,string CarMgr)
 			{
 				if(!(bool)w["PORel.OpenRelease"])continue;
 				DataRow newrow = POsGrid.NewRow();
-				newrow["Company"] = (string)w["PORel.Company"];
+				newrow["Company"] = (string)w["Company"];
 				newrow["PONum"] = ((int)w["PORel.PONum"]).ToString();
 				newrow["POLine"] = ((int)w["PORel.POLine"]).ToString();
 				newrow["PORel"] = ((int)w["PORel.PORelNum"]).ToString();
@@ -785,9 +769,9 @@ private void MRG_FormLock(string status,string userID,string CarMgr)
 		foreach(DataRowView r in dv)
 		{
 			DataRow nr = RMAsGrid.NewRow();
-			nr["Company"] = (string)r["RMADtl.Company"];
+			nr["Company"] = (string)r["Company"];
 			nr["RMANum"] = ((int)r["RMADtl.RMANum"]).ToString();
-			nr["RMALine"] = ((int)r["RMADtl.RMALine"]).ToString();
+			//nr["RMALine"] = ((int)r["RMADtl.RMALine"]).ToString();
 			nr["Order"] = ((int)r["RMADtl.OrderNum"]).ToString();
 			nr["Line"] = ((int)r["RMADtl.OrderLine"]).ToString();
 			nr["PartNum"] = (string)r["RMADtl.PartNum"];
@@ -802,7 +786,7 @@ private void MRG_FormLock(string status,string userID,string CarMgr)
 		foreach(DataRowView r in dv)
 		{
 			DataRow nr = TFOsGrid.NewRow();
-			nr["Company"] = (string)r["TFOrdDtl.Company"];
+			nr["Company"] = (string)r["Company"];
 			nr["Order"] = (string)r["TFOrdDtl.TFOrdNum"];
 			nr["Line"] = ((int)r["TFOrdDtl.TFOrdLine"]).ToString();
 			nr["PartNum"] = (string)r["TFOrdDtl.PartNum"];
@@ -810,17 +794,11 @@ private void MRG_FormLock(string status,string userID,string CarMgr)
 		}
 
 		epiUltraGridC1_Jobs.DisplayLayout.AutoFitStyle = Infragistics.Win.UltraWinGrid.AutoFitStyle.ResizeAllColumns;
-
 		epiUltraGridC1_Inventory.DisplayLayout.AutoFitStyle = Infragistics.Win.UltraWinGrid.AutoFitStyle.ResizeAllColumns;
-
 		epiUltraGridC1_Orders.DisplayLayout.AutoFitStyle = Infragistics.Win.UltraWinGrid.AutoFitStyle.ResizeAllColumns;
-
 		epiUltraGridC1_RMAs.DisplayLayout.AutoFitStyle = Infragistics.Win.UltraWinGrid.AutoFitStyle.ResizeAllColumns;
-		
 		epiUltraGridC1_TFOs.DisplayLayout.AutoFitStyle = Infragistics.Win.UltraWinGrid.AutoFitStyle.ResizeAllColumns;
-		
 		epiUltraGridC1_POs.DisplayLayout.AutoFitStyle = Infragistics.Win.UltraWinGrid.AutoFitStyle.ResizeAllColumns;
-
 		epiUltraGridC1_Parts.DisplayLayout.AutoFitStyle = Infragistics.Win.UltraWinGrid.AutoFitStyle.ResizeAllColumns;
 		
 		DisplayData("PopulateGrids end");
@@ -927,7 +905,6 @@ private void MRG_FormLock(string status,string userID,string CarMgr)
 
 			edvUD103.dataView[edvUD103.Row]["Character02"] += addfieldContents;
 			edvUD103.dataView[edvUD103.Row]["ShortChar06"] = "In Progress";
-
 	}
 
 	private void epiBTT_CA_Comm_Add_Click(object sender, System.EventArgs args)
@@ -958,7 +935,6 @@ private void MRG_FormLock(string status,string userID,string CarMgr)
 
 			edvUD103.dataView[edvUD103.Row]["Character05"] += addfieldContents;
 			edvUD103.dataView[edvUD103.Row]["ShortChar06"] = "In Progress";
-
 	}
 
 	private void epiBTT_Follow_Add_Click(object sender, System.EventArgs args)
@@ -974,10 +950,7 @@ private void MRG_FormLock(string status,string userID,string CarMgr)
 
 			edvUD103.dataView[edvUD103.Row]["Character04"] += addfieldContents;
 			edvUD103.dataView[edvUD103.Row]["ShortChar06"] = "In Progress";
-
 	}
-
-
 
 	private void epiBT_FOLLOW_Click(object sender, System.EventArgs args)
 	{

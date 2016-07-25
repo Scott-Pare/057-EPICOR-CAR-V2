@@ -69,6 +69,8 @@ public class Script
 		this.epiBTT_Follow_Add.Click += new System.EventHandler(this.epiBTT_Follow_Add_Click);
 		this.epiBTT_Pre_Add.Click += new System.EventHandler(this.epiBTT_Pre_Add_Click);
 		this.epiBT_FOLLOW.Click += new System.EventHandler(this.epiBT_FOLLOW_Click);
+		this.epiBtExt.Click += new System.EventHandler(this.epiBtExt_Click);
+		this.epiButtonC1a.Click += new System.EventHandler(this.epiButtonC1a_Click);
 		// End Wizard Added Custom Method Calls
 		s = (Epicor.Mfg.Core.Session)UD103Form.Session;
 
@@ -161,6 +163,8 @@ public class Script
 		this.UD103_Column.ColumnChanged -= new DataColumnChangeEventHandler(this.UD103_AfterFieldChange);
 		this.UD103_Row.EpiRowChanged -= new EpiRowChanged(this.UD103_AfterRowChange);
 		this.UD103_Column.ColumnChanging -= new DataColumnChangeEventHandler(this.UD103_BeforeFieldChange);
+		this.epiBtExt.Click -= new System.EventHandler(this.epiBtExt_Click);
+		this.epiButtonC1a.Click -= new System.EventHandler(this.epiButtonC1a_Click);
 		// End Wizard Added Object Disposal
 
 		// Begin Custom Code Disposal
@@ -232,7 +236,7 @@ public class Script
 			edvUD103.dataView[edvUD103.Row]["Character10"] = "UK";
 			}
 		//	7. If Cur-Company & cur-Plant = 20MfgSys then UD103.ShortChar03 = mroat
-		else if(s.CompanyID == "MfgSys" && s.PlantID=="MfgSys")
+		else if(s.CompanyID == "20" && s.PlantID=="MfgSys")
 			{
 			AssignedManager = "mroat";
 			edvUD103.dataView[edvUD103.Row]["Character10"] = "PL";
@@ -322,6 +326,13 @@ public class Script
 			edvUD103.dataView[edvUD103.Row]["Date04"] = DateTime.Now.AddDays(30);
 		}
 		edvUD103.dataView[edvUD103.Row].EndEdit();
+
+		//4. Time/Date/User Stamp CHARACTER08
+		string User_TnD = string.Format("{0:HH:mmtt dd-MMM-yyyy} {1}", DateTime.Now, s.UserID);	
+		edvUD103.dataView[edvUD103.Row]["Character08"] = User_TnD;
+		edvUD103.dataView[edvUD103.Row]["Date06"] = DateTime.Now; //Close date
+
+
 	}
 
 	private void edvUD103_EpiViewNotification(EpiDataView view, EpiNotifyArgs args)
@@ -623,6 +634,23 @@ private void MRG_FormLock(string status,string userID,string CarMgr)
 		        edvUD103.dataView.Table.Columns["Character05"].ExtendedProperties["ReadOnly"] = true;
 		        edvUD103.dataView.Table.Columns["ShortChar03"].ExtendedProperties["ReadOnly"] = true;
 		        edvUD103.dataView.Table.Columns["ShortChar01"].ExtendedProperties["ReadOnly"] = true;
+		        edvUD103.dataView.Table.Columns["ShortChar06"].ExtendedProperties["ReadOnly"] = false;
+  		      csm.GetNativeControlReference("1baa0d64-ec8c-4d78-b47b-da3a88b67441").Enabled = false; //ShortChar06 > status
+  		      csm.GetNativeControlReference("640916d7-92eb-4ec0-9154-e9a8c661de69").Enabled = false;
+		        edvUD103.dataView.Table.Columns["Date06"].ExtendedProperties["ReadOnly"] = true; //Close Date Step 2
+
+				csm.GetNativeControlReference("80b7303a-1066-40fe-86af-810583b96019").Enabled = false; //CheckBox01
+				csm.GetNativeControlReference("2e523ad1-b797-44c3-af71-678fdc84a44e").Enabled = false; //Checkbox02
+
+				epiLabelC12.TextAlign = System.Drawing.ContentAlignment.TopLeft;
+				epiLabelC6.TextAlign = System.Drawing.ContentAlignment.TopLeft;
+				epiLabelC23.TextAlign = System.Drawing.ContentAlignment.TopLeft;
+				epiLabelC1a.TextAlign = System.Drawing.ContentAlignment.TopLeft;
+				epiLabelC24.TextAlign = System.Drawing.ContentAlignment.TopLeft;
+				epiLabelC25.TextAlign = System.Drawing.ContentAlignment.TopLeft;
+				epiLabelC1b.TextAlign = System.Drawing.ContentAlignment.TopLeft;
+
+
 
 				//Cool trick to create LABELS
 				//Root Cause epiLabelC16
@@ -984,11 +1012,30 @@ private void MRG_FormLock(string status,string userID,string CarMgr)
 			edvUD103.dataView[edvUD103.Row]["Character04"] += 
 				string.Format("{3}{0}{3}{1}{3}{2}{3}",
 							"---------------------",
-							string.Format("{0:HH:mmtt dd-MMM-yy} {1}", DateTime.Now, s.UserID),
-							"CAR was not sucessfull.  Extending audit date 30 days from today",
+							string.Format("{0:HH:mmtt dd-MMM-yy} {1}", 
+							DateTime.Now,
+							s.UserID),
+							"CAR was not effective.  Extending audit date 30 days from today",
 							Environment.NewLine);
+			edvUD103.dataView[edvUD103.Row].EndEdit();
 
-
+			List<string> address = new List<string>();
+			DataTable AddressTable = GetUserFileRows();
+			foreach(DataRow r in AddressTable.Rows)
+			{
+				if((string)r["UserFile.DCDUserID"] == (string)edvUD103.dataView[edvUD103.Row]["ShortChar01"] || (string)r["UserFile.DCDUserID"] == (string)edvUD103.dataView[edvUD103.Row]["ShortChar03"])
+				{
+					address.Add((string)r["UserFile.EmailAddress"]);
+				}
+			}
+			string strSubject = string.Format("CAR# {0}, Needs your attention!", edvUD103.dataView[edvUD103.Row]["KEY1"]);
+			string strBody = string.Format("CAR {2} was not effective.  A review meeting will be setup shortly.  {0}Thank you.",
+				Environment.NewLine, 
+				edvUD103.dataView[edvUD103.Row]["ShortChar01"], 
+				edvUD103.dataView[edvUD103.Row]["Key1"]
+				);
+			SendEmail(address, strSubject,strBody);
+			address = null;
 			edvUD103.dataView[edvUD103.Row].EndEdit();
 		}
 	}
@@ -1029,5 +1076,79 @@ private void MRG_FormLock(string status,string userID,string CarMgr)
 			case "Key1":
 				break;
 		}
+	}
+
+	private void epiBtExt_Click(object sender, System.EventArgs args)
+	{
+		// ** Place Event Handling Code Here **
+		//1. See if CheckBox01 is TRUE SMACK THEM
+		if((bool)edvUD103.dataView[edvUD103.Row]["CheckBox02"] == true)
+			{
+			MessageBox.Show("CAR has allready been extended");
+			}
+		//2. IF False, Send Email, 
+		//   Set CheckBox01 = TRUE 
+		if((bool)edvUD103.dataView[edvUD103.Row]["CheckBox02"] == false)
+			{
+			edvUD103.dataView[edvUD103.Row]["CheckBox02"] = true;
+			edvUD103.dataView[edvUD103.Row]["Date02"] = DateTime.Now.AddDays(15);
+			oTrans.Update();
+
+			List<string> address = new List<string>();
+			DataTable AddressTable = GetUserFileRows();
+			foreach(DataRow r in AddressTable.Rows)
+			{
+				if((string)r["UserFile.DCDUserID"] == (string)edvUD103.dataView[edvUD103.Row]["ShortChar01"] || (string)r["UserFile.DCDUserID"] == (string)edvUD103.dataView[edvUD103.Row]["ShortChar03"])
+				{
+					address.Add((string)r["UserFile.EmailAddress"]);
+				}
+			}
+			string strSubject = string.Format("CAR# {0}, Needs your attention!", edvUD103.dataView[edvUD103.Row]["KEY1"]);
+			string strBody = string.Format("CAR Manager {1} has approved your 15 day extension for CAR {2}.{0}Thank you.",
+				Environment.NewLine, 
+				edvUD103.dataView[edvUD103.Row]["ShortChar03"], 
+				edvUD103.dataView[edvUD103.Row]["Key1"]
+				);
+			SendEmail(address, strSubject,strBody);
+			address = null;
+			edvUD103.dataView[edvUD103.Row].EndEdit();
+			}
+	}
+
+	private void epiButtonC1a_Click(object sender, System.EventArgs args)
+	{
+		// ** Place Event Handling Code Here **
+		//1. See if CheckBox01 is TRUE SMACK THEM
+		if((bool)edvUD103.dataView[edvUD103.Row]["CheckBox01"] == true)
+			{
+			MessageBox.Show("You can only request a CAR to be extended one time.");
+			}
+		//2. IF False, Send Email, 
+		//   Set CheckBox01 = TRUE 
+		if((bool)edvUD103.dataView[edvUD103.Row]["CheckBox01"] == false)
+			{
+			MessageBox.Show("A request has been sent to the CAR MANAGER to extened this CAR 15 Days.  Please follow up with the CAR Manager if you have questions.");
+			edvUD103.dataView[edvUD103.Row]["CheckBox01"] = true;
+			oTrans.Update();
+
+			List<string> address = new List<string>();
+			DataTable AddressTable = GetUserFileRows();
+			foreach(DataRow r in AddressTable.Rows)
+			{
+				if((string)r["UserFile.DCDUserID"] == (string)edvUD103.dataView[edvUD103.Row]["ShortChar01"] || (string)r["UserFile.DCDUserID"] == (string)edvUD103.dataView[edvUD103.Row]["ShortChar03"])
+				{
+					address.Add((string)r["UserFile.EmailAddress"]);
+				}
+			}
+			string strSubject = string.Format("CAR# {0}, Needs your attention!", edvUD103.dataView[edvUD103.Row]["KEY1"]);
+			string strBody = string.Format("User {1} has requested that CAR {2} be exteneded.{0}Please review and contact the person assigned to the CAR.{0}Thank you.",
+				Environment.NewLine, 
+				edvUD103.dataView[edvUD103.Row]["ShortChar01"], 
+				edvUD103.dataView[edvUD103.Row]["Key1"]
+				);
+			SendEmail(address, strSubject,strBody);
+			address = null;
+			edvUD103.dataView[edvUD103.Row].EndEdit();
+			}
 	}
 }
